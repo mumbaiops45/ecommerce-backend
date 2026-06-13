@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import Cart from "../models/Cart.model.js";
 import Product from "../models/Product.model.js";
+import User from "../models/User.model.js";
 
 const populateCart = (userId) =>
   Cart.findOne({ user: userId }).populate(
@@ -83,6 +84,42 @@ export const removeFromCart = async (userId, productId) => {
 
   await cart.save();
   return populateCart(userId);
+};
+
+export const getAllCarts = async ({ search, sort, order, page, limit } = {}) => {
+  let userFilter;
+
+  if (search) {
+    const matchingUsers = await User.find({
+      $or: [
+        { name: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+      ],
+    }).select("_id");
+    userFilter = { user: { $in: matchingUsers.map((u) => u._id) } };
+  }
+
+  const query = userFilter || {};
+
+  const allowedSort = ["createdAt", "updatedAt"];
+  const sortField = allowedSort.includes(sort) ? sort : "createdAt";
+  const sortDir = order === "asc" ? 1 : -1;
+
+  const pageNum = Math.max(1, parseInt(page) || 1);
+  const limitNum = Math.min(100, Math.max(1, parseInt(limit) || 10));
+  const skip = (pageNum - 1) * limitNum;
+
+  const [carts, total] = await Promise.all([
+    Cart.find(query)
+      .populate("user", "name email phone")
+      .populate("items.product", "title price images brand")
+      .sort({ [sortField]: sortDir })
+      .skip(skip)
+      .limit(limitNum),
+    Cart.countDocuments(query),
+  ]);
+
+  return { carts, total, page: pageNum, totalPages: Math.ceil(total / limitNum) };
 };
 
 export const clearCart = async (userId) => {

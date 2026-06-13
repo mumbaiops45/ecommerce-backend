@@ -1,8 +1,18 @@
 import {
+  getAllOrders,
   createOrder,
   getUserOrders,
   getOrderById,
 } from "../services/order.service.js";
+
+export const getAllOrder = async (req, res) => {
+  try {
+    const result = await getAllOrders(req.query);
+    return res.status(200).json({ success: true, ...result });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+};
 
 export const placeOrder = async (req, res) => {
   try {

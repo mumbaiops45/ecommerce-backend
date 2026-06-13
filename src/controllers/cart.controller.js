@@ -4,6 +4,7 @@ import {
   updateCartItem,
   removeFromCart,
   clearCart,
+  getAllCarts,
 } from "../services/cart.service.js";
 
 export const getUserCart = async (req, res) => {
@@ -47,6 +48,15 @@ export const removeItem = async (req, res) => {
       .json({ success: true, message: "Item removed from cart", cart });
   } catch (err) {
     return res.status(400).json({ success: false, message: err.message });
+  }
+};
+
+export const getAllCartsAdmin = async (req, res) => {
+  try {
+    const result = await getAllCarts(req.query);
+    return res.status(200).json({ success: true, ...result });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
   }
 };
 

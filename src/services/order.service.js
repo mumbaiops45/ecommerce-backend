@@ -1,6 +1,52 @@
 import mongoose from "mongoose";
 import Order from "../models/Order.model.js";
 import Product from "../models/Product.model.js";
+import User from "../models/User.model.js";
+
+const ALLOWED_SORT = ["createdAt", "totalAmount"];
+
+export const getAllOrders = async ({
+  search,
+  orderStatus,
+  paymentStatus,
+  sort,
+  order,
+  page,
+  limit,
+} = {}) => {
+  const query = {};
+
+  if (orderStatus) query.orderStatus = orderStatus;
+  if (paymentStatus) query.paymentStatus = paymentStatus;
+
+  if (search) {
+    const matchingUsers = await User.find({
+      $or: [
+        { name: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+      ],
+    }).select("_id");
+    query.user = { $in: matchingUsers.map((u) => u._id) };
+  }
+
+  const sortField = ALLOWED_SORT.includes(sort) ? sort : "createdAt";
+  const sortDir = order === "asc" ? 1 : -1;
+
+  const pageNum = Math.max(1, parseInt(page) || 1);
+  const limitNum = Math.min(100, Math.max(1, parseInt(limit) || 10));
+  const skip = (pageNum - 1) * limitNum;
+
+  const [orders, total] = await Promise.all([
+    Order.find(query)
+      .populate("user", "name email phone")
+      .sort({ [sortField]: sortDir })
+      .skip(skip)
+      .limit(limitNum),
+    Order.countDocuments(query),
+  ]);
+
+  return { orders, total, page: pageNum, totalPages: Math.ceil(total / limitNum) };
+};
 
 export const createOrder = async (userId, { items, shippingAddress }) => {
   const orderItems = [];
@@ -23,7 +69,7 @@ export const createOrder = async (userId, { items, shippingAddress }) => {
 
     orderItems.push({
       product: product._id,
-      name: product.name,
+      name: product.title,
       image,
       price: product.price,
       quantity: item.quantity,
