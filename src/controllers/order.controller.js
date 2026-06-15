@@ -3,6 +3,7 @@ import {
   createOrder,
   getUserOrders,
   getOrderById,
+  updateOrderById
 } from "../services/order.service.js";
 
 export const getAllOrder = async (req, res) => {
@@ -36,6 +37,22 @@ export const getMyOrders = async (req, res) => {
 export const getSingleOrder = async (req, res) => {
   try {
     const order = await getOrderById(req.user._id, req.params.id);
+    return res.status(200).json({ success: true, order });
+  } catch (err) {
+    if (err.message === "Access denied") {
+      return res.status(403).json({ success: false, message: err.message });
+    }
+    if (err.message === "Order not found") {
+      return res.status(404).json({ success: false, message: err.message });
+    }
+    return res.status(400).json({ success: false, message: err.message });
+  }
+};
+export const updateSingleOrder = async (req, res) => {
+  try {
+  
+   
+    const order = await updateOrderById(req.user._id, req.params.id,req.body);
     return res.status(200).json({ success: true, order });
   } catch (err) {
     if (err.message === "Access denied") {

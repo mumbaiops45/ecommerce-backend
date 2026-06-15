@@ -106,3 +106,19 @@ export const getOrderById = async (userId, orderId) => {
 
   return order;
 };
+export const updateOrderById = async (userId, orderId,data) => {
+  if (!mongoose.Types.ObjectId.isValid(orderId)) {
+    throw new Error("Invalid order ID");
+  }
+
+  const order = await Order.findByIdAndUpdate(orderId,data,{new:true,runValidators:true});
+  if (!order) throw new Error("Order not found");
+
+  if (order.user.toString() !== userId.toString()) {
+    throw new Error("Access denied");
+  }
+
+
+
+  return order;
+};

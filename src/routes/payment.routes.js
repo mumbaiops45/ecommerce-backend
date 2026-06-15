@@ -1,14 +1,12 @@
 import express from "express";
-import {
-  createPaymentOrder,
-  verifyPaymentSignature,
-} from "../controllers/payment.controller.js";
-import { protect } from "../middlewares/auth.middleware.js";
 
+import { protect,authorize } from "../middlewares/auth.middleware.js";
+import { createPaymentOrder,verifyPayment } from "../controllers/payment.controller.js";
 const router = express.Router();
 
-// ─── All payment routes require login ────────────────────────────────────────
-router.post("/create-order", protect, createPaymentOrder);
-router.post("/verify", protect, verifyPaymentSignature);
+// ─── Normal user — own profile (role: user) ───────────────────────────────────
+router.post("/create-order/:orderId", protect, authorize("user"), createPaymentOrder);
+router.post("/verify", protect, authorize("user"), verifyPayment);
+
 
 export default router;
