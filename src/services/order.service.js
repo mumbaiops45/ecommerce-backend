@@ -106,19 +106,45 @@ export const getOrderById = async (userId, orderId) => {
 
   return order;
 };
-export const updateOrderById = async (userId, orderId,data) => {
+export const updateOrderById = async (userId,
+  orderId,
+  data
+) => {
   if (!mongoose.Types.ObjectId.isValid(orderId)) {
     throw new Error("Invalid order ID");
   }
 
-  const order = await Order.findByIdAndUpdate(orderId,data,{new:true,runValidators:true});
-  if (!order) throw new Error("Order not found");
-
-  if (order.user.toString() !== userId.toString()) {
-    throw new Error("Access denied");
+  // Delivered
+  if (data.orderStatus === "delivered") {
+    data.deliveredAt = new Date();
   }
 
+  // Changed back from delivered
+  if (
+    data.orderStatus &&
+    data.orderStatus !== "delivered"
+  ) {
+    data.deliveredAt = null;
+  }
 
+  // Cancelled
+  if (data.orderStatus === "cancelled") {
+    data.expectedDeliveryDate = null;
+    data.deliveredAt = null;
+  }
+
+  const order = await Order.findByIdAndUpdate(
+    orderId,
+    data,
+    {
+      returnDocument: "after",
+      runValidators: true,
+    }
+  );
+
+  if (!order) {
+    throw new Error("Order not found");
+  }
 
   return order;
 };

@@ -69,9 +69,34 @@ const orderSchema = new mongoose.Schema(
 
     orderStatus: {
       type: String,
-      enum: ["pending", "processing", "shipped", "delivered", "cancelled"],
+      enum: [
+        "pending",
+        "processing",
+        "shipped",
+        "delivered",
+        "cancelled",
+      ],
       default: "pending",
     },
+
+    // Payment completed date
+    orderPlacedAt: {
+      type: Date,
+      default: null,
+    },
+
+    // Estimated delivery date
+    expectedDeliveryDate: {
+      type: Date,
+      default: null,
+    },
+
+    // Actual delivery date
+    deliveredAt: {
+      type: Date,
+      default: null,
+    },
+
     razorpayOrderId: {
       type: String,
       default: "",
@@ -81,11 +106,11 @@ const orderSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
-
   },
   {
     timestamps: true,
   }
 );
 
-export default mongoose.models.Order || mongoose.model("Order", orderSchema);
+export default mongoose.models.Order ||
+  mongoose.model("Order", orderSchema);

@@ -3,28 +3,28 @@ import razorpay from "../config/razorpay.js"
 import crypto from "crypto";
 import Cart from "../models/Cart.model.js";
 
-export const createUserPaymentOrder = async(orderId) =>{
-   
-    const order = await Order.findById(orderId);
-    
-    if (!order) {
-        throw new Error("order not found");
-    }
+export const createUserPaymentOrder = async (orderId) => {
 
-      if (order.paymentStatus === "paid") {
+  const order = await Order.findById(orderId);
+
+  if (!order) {
+    throw new Error("order not found");
+  }
+
+  if (order.paymentStatus === "paid") {
     throw new Error("Order already paid");
   }
 
-    const options = {
-        amount : order.totalAmount*100,
-        currency:"INR",
-        receipt:order._id.toString()
-    }
-     
-    const razorpayOrder = await razorpay.orders.create(options)
-    order.razorpayOrderId = razorpayOrder.id;
-    await order.save();
-    return razorpayOrder
+  const options = {
+    amount: order.totalAmount * 100,
+    currency: "INR",
+    receipt: order._id.toString()
+  }
+
+  const razorpayOrder = await razorpay.orders.create(options)
+  order.razorpayOrderId = razorpayOrder.id;
+  await order.save();
+  return razorpayOrder
 }
 
 export const verifyUserPayment = async ({
@@ -32,7 +32,7 @@ export const verifyUserPayment = async ({
   razorpay_payment_id,
   razorpay_signature,
 }) => {
-     // 1. Prevent missing data
+  // 1. Prevent missing data
   if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
     throw new Error("Missing payment details");
   }
@@ -65,13 +65,23 @@ export const verifyUserPayment = async ({
   order.orderStatus = "processing";
   order.razorpayPaymentId = razorpay_payment_id;
 
+
+  const now = new Date();
+
+  order.orderPlacedAt = now;
+
+  const expectedDate = new Date(now);
+  expectedDate.setDate(expectedDate.getDate() + 4);
+
+  order.expectedDeliveryDate = expectedDate;
+
   await order.save();
 
   // 6. Clear cart
-//   await Cart.findOneAndUpdate(
-//     { user: order.user },
-//     { items: [] }
-//   );
+  //   await Cart.findOneAndUpdate(
+  //     { user: order.user },
+  //     { items: [] }
+  //   );
 
   return order;
 };
