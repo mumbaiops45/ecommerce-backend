@@ -7,8 +7,8 @@ import { protect, authorize } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
-router.post( "/:productId", protect, authorize("user"), createReview); 
-router.get("/:productId", getReviews);     
-router.put("/:reviewId", protect, authorize("user"), updateReview);          // POST   /api/products
+router.post( "/:productId", protect, authorize("user"), createReview);
+router.get("/:productId", getReviews);
+router.put("/:reviewId", protect, authorize("user"), updateReview);       // POST   /api/products
 
 export default router;

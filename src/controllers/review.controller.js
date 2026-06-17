@@ -32,7 +32,7 @@ export const updateReview = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: "Review updatd successfully",
+      message: "Review updated successfully",
       review,
     });
   } catch (err) {
