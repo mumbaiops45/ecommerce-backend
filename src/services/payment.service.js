@@ -2,6 +2,8 @@ import Order from "../models/Order.model.js";
 import razorpay from "../config/razorpay.js"
 import crypto from "crypto";
 import Cart from "../models/Cart.model.js";
+import Coupon from "../models/Coupon.model.js";
+import CouponUsage from "../models/CouponUsage.model.js";
 
 export const createUserPaymentOrder = async (orderId) => {
 
@@ -59,7 +61,9 @@ export const verifyUserPayment = async ({
   if (!order) {
     throw new Error("Order not found");
   }
-
+if (order.paymentStatus === "paid") {
+  return order;
+}
   // 5. Update order status
   order.paymentStatus = "paid";
   order.orderStatus = "processing";
@@ -76,6 +80,28 @@ export const verifyUserPayment = async ({
   order.expectedDeliveryDate = expectedDate;
 
   await order.save();
+
+const usage =
+  await CouponUsage.findOne({
+    coupon: order.couponId,
+    user: order.user,
+  });
+
+if (!usage) {
+  await CouponUsage.create({
+    coupon: order.couponId,
+    user: order.user,
+  });
+
+  await Coupon.findByIdAndUpdate(
+    order.couponId,
+    {
+      $inc: {
+        usedCount: 1,
+      },
+    }
+  );
+}
 
   // 6. Clear cart
   //   await Cart.findOneAndUpdate(

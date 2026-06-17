@@ -2,6 +2,8 @@ import mongoose from "mongoose";
 import Order from "../models/Order.model.js";
 import Product from "../models/Product.model.js";
 import User from "../models/User.model.js";
+import Coupon from "../models/Coupon.model.js";
+import CouponUsage from "../models/CouponUsage.model.js";
 
 const ALLOWED_SORT = ["createdAt", "totalAmount"];
 
@@ -48,9 +50,11 @@ export const getAllOrders = async ({
   return { orders, total, page: pageNum, totalPages: Math.ceil(total / limitNum) };
 };
 
-export const createOrder = async (userId, { items, shippingAddress }) => {
+export const createOrder = async (userId, { items, shippingAddress, couponCode }) => {
   const orderItems = [];
-  let totalAmount = 0;
+  let subtotal = 0;
+  let discountAmount = 0;
+  let coupon = null;
 
   for (const item of items) {
     if (!mongoose.Types.ObjectId.isValid(item.productId)) {
@@ -75,15 +79,70 @@ export const createOrder = async (userId, { items, shippingAddress }) => {
       quantity: item.quantity,
     });
 
-    totalAmount += product.price * item.quantity;
+    subtotal += product.price * item.quantity;
   }
 
+  if (couponCode) {
+    coupon = await Coupon.findOne({
+      code: couponCode.toUpperCase(),
+      isActive: true
+    })
+    if (!coupon) {
+      throw new Error("coupon not exist");
+    };
+    if (coupon.usedCount >= coupon.useLimit) {
+      throw new Error("Coupon usage limit reached");
+    }
+    if (coupon.expiresAt < new Date()) {
+      throw new Error("Coupon expired");
+    }
+    if (
+      subtotal <
+      coupon.minimumOrderAmount
+    ) {
+      throw new Error(
+        `Minimum order is ₹${coupon.minimumOrderAmount}`
+      );
+    }
+    const alreadyUsed = await CouponUsage.findOne({
+      coupon: coupon._id,
+      user: userId
+    })
+    if (alreadyUsed) {
+      throw new Error(
+        "You have already used this coupon"
+      );
+    }
+    if (coupon.discountType === "fixed") {
+      discountAmount = coupon.discountValue;
+    } else {
+      discountAmount = (subtotal * coupon.discountValue) / 100
+    }
+
+    if (coupon.maximumDiscountAmount && discountAmount > coupon.maximumDiscountAmount) {
+      discountAmount = coupon.maximumDiscountAmount;
+
+    }
+  };
+
+  discountAmount = Math.min(
+    discountAmount,
+    subtotal
+  );
+
+  const totalAmount = subtotal - discountAmount;
   const order = await Order.create({
     user: userId,
     items: orderItems,
     shippingAddress,
-    totalAmount,
+    subtotal,
+    discountAmount,
+    couponCode: couponCode || "",
+  couponId: coupon?._id || null,
+    totalAmount
   });
+
+
 
   return order;
 };

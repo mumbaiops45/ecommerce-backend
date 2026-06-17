@@ -12,6 +12,7 @@ import orderRoutes from "./routes/order.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
 import paymentRoutes from "./routes/payment.routes.js";
 import reviewRoutes from "./routes/review.routes.js";
+import couponRoutes from "./routes/coupon.routs.js";
 const app = express();
 
 connectDB();
@@ -40,6 +41,6 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/admins", adminRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/reviews", reviewRoutes);
-
+app.use("/api/coupons", couponRoutes);
 
 export default app;
