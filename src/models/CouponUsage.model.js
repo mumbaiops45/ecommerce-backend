@@ -28,7 +28,8 @@ couponUsageSchema.index(
   { unique: true }
 );
 
-export default mongoose.model(
-  "CouponUsage",
-  couponUsageSchema
-);
+export default mongoose.models.CouponUsage ||
+  mongoose.model(
+    "CouponUsage",
+    couponUsageSchema
+  );

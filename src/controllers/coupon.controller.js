@@ -1,4 +1,4 @@
-import { getAllCoupons,createCoupons,updateAnCouponById} from "../services/coupon.service.js";
+import { getAllCoupons,createCoupons,updateAnCouponById,getSingleCouponById,deleteSingleCouponById} from "../services/coupon.service.js";
 export const getAllCoupon = async(req,res) =>{
  try {
     const coupons = await getAllCoupons();
@@ -18,6 +18,22 @@ export const createCoupon = async(req,res) =>{
 export const updateCouponById = async(req,res) =>{
  try {
     const coupon = await updateAnCouponById(req.params.id,req.body);
+    return res.status(200).json({ success: true,coupon});
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+}
+export const getCouponById = async(req,res) =>{
+ try {
+    const coupon = await getSingleCouponById(req.params.id);
+    return res.status(200).json({ success: true,coupon});
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+}
+export const deleteCouponById = async(req,res) =>{
+ try {
+    const coupon = await deleteSingleCouponById(req.params.id);
     return res.status(200).json({ success: true,coupon});
   } catch (err) {
     return res.status(500).json({ success: false, message: err.message });

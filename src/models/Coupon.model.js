@@ -51,5 +51,5 @@ const couponSchema = new mongoose.Schema({
     default: true,
   },
 });
-
-export default mongoose.model("Coupon", couponSchema);
+export default mongoose.models.Coupon ||
+  mongoose.model("Coupon", couponSchema);

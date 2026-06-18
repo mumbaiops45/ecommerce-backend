@@ -17,3 +17,17 @@ const coupon = await Coupon.findByIdAndUpdate(id,data, {
 }
 return coupon
 }
+export const getSingleCouponById = async(id)=>{
+const coupon = await Coupon.findById(id);
+    if (!coupon) {
+  throw new Error("Coupon not found");
+}
+return coupon
+}
+export const deleteSingleCouponById = async(id)=>{
+const coupon = await Coupon.findByIdAndDelete(id);
+    if (!coupon) {
+  throw new Error("Coupon not found");
+}
+return coupon
+}
