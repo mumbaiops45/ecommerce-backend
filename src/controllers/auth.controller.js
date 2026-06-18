@@ -2,7 +2,7 @@ import { registerUser, loginUser } from "../services/auth.service.js";
 const isProduction = process.env.NODE_ENV === "production";
 const COOKIE_OPTIONS = {
   httpOnly: true,
-  secure: isProduction === "production",
+  secure: isProduction,
   sameSite: isProduction ? "none" : "lax",
   maxAge: 7 * 24 * 60 * 60 * 1000,
 };
