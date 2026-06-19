@@ -22,10 +22,7 @@ export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
     const { user, token } = await loginUser({ email, password });
-
-    console.log("Setting cookie:", token);
     res.cookie("token", token, COOKIE_OPTIONS);
-        console.log("Cookie Set Successfully");
     return res.status(200).json({ success: true, message: "Logged in successfully", user, token });
   } catch (err) {
     return res.status(401).json({ success: false, message: err.message });
@@ -33,10 +30,6 @@ export const login = async (req, res) => {
 };
 
 export const logout = (req, res) => {
-  res.clearCookie("token", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-  });
+  res.clearCookie("token", COOKIE_OPTIONS);
   return res.status(200).json({ success: true, message: "Logged out successfully" });
 };

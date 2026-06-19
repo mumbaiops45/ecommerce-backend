@@ -13,6 +13,8 @@ import adminRoutes from "./routes/admin.routes.js";
 import paymentRoutes from "./routes/payment.routes.js";
 import reviewRoutes from "./routes/review.routes.js";
 import couponRoutes from "./routes/coupon.routs.js";
+import wishlistRoutes from "./routes/wishlist.routes.js";
+import bannerRoutes from "./routes/banner.routes.js";
 const app = express();
 
 connectDB();
@@ -25,6 +27,8 @@ app.use(
       "https://e-commerce83.netlify.app",
     ],
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 app.use(express.json());
@@ -32,10 +36,12 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // Base Routes
+app.use("/api/banner", bannerRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/categories", categoryRoutes);
+app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/admins", adminRoutes);

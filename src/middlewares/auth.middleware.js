@@ -3,8 +3,6 @@ import jwt from "jsonwebtoken";
 import User from "../models/User.model.js";
 
 export const protect = async (req, res, next) => {
-console.log("req.cookies =", req.cookies);
-  console.log("req.headers.cookie =", req.headers.cookie);
 
   try {
    
