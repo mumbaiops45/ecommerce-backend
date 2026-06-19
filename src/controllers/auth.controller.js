@@ -1,5 +1,5 @@
 import { registerUser, loginUser } from "../services/auth.service.js";
-const isProduction = process.env.NODE_ENV === "production";
+
 const COOKIE_OPTIONS = {
   httpOnly: true,
   secure: true,
@@ -22,7 +22,10 @@ export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
     const { user, token } = await loginUser({ email, password });
+
+    console.log("Setting cookie:", token);
     res.cookie("token", token, COOKIE_OPTIONS);
+        console.log("Cookie Set Successfully");
     return res.status(200).json({ success: true, message: "Logged in successfully", user, token });
   } catch (err) {
     return res.status(401).json({ success: false, message: err.message });
