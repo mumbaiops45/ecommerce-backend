@@ -11,6 +11,8 @@ export const register = async (req, res) => {
   try {
     const { name, email, phone, password } = req.body;
     const { user, token } = await registerUser({ name, email, phone, password });
+
+    
     res.cookie("token", token, COOKIE_OPTIONS);
     return res.status(201).json({ success: true, message: "Registered successfully", user ,token });
   } catch (err) {
@@ -22,6 +24,7 @@ export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
     const { user, token } = await loginUser({ email, password });
+        console.log("token",token);
     res.cookie("token", token, COOKIE_OPTIONS);
     return res.status(200).json({ success: true, message: "Logged in successfully", user, token });
   } catch (err) {
