@@ -1,13 +1,29 @@
 import {
-  getAllHeroBanner,
+  getAllHeroBanners,
+  getAllMiddleBanners,
   CreateHeroBanner,
   UpdateHeroBannerById,
   DeleteHeroBannerById,
 } from "../services/banner.service.js";
 
-export const getAllBanner = async (req, res) => {
+export const getAllHeroBanner = async (req, res) => {
   try {
-    const banners = await getAllHeroBanner();
+    const banners = await getAllHeroBanners();
+
+    return res.status(200).json({
+      success: true,
+      banners,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+export const getAllMiddleBanner = async (req, res) => {
+  try {
+    const banners = await getAllMiddleBanners();
 
     return res.status(200).json({
       success: true,
@@ -22,8 +38,11 @@ export const getAllBanner = async (req, res) => {
 };
 
 export const CreateBanner = async (req, res) => {
+  const data = {...req.body,
+    image:req.file?.path
+  }
   try {
-    const banner = await CreateHeroBanner(req.body);
+    const banner = await CreateHeroBanner(data);
 
     return res.status(201).json({
       success: true,
@@ -38,10 +57,14 @@ export const CreateBanner = async (req, res) => {
 };
 
 export const UpdateBannerById = async (req, res) => {
+  const data = {...req.body};
+  if (req.file) {
+    data.image=req.file.path
+  }
   try {
     const banner = await UpdateHeroBannerById(
       req.params.id,
-      req.body
+      data
     );
 
     return res.status(200).json({

@@ -15,9 +15,11 @@ import reviewRoutes from "./routes/review.routes.js";
 import couponRoutes from "./routes/coupon.routs.js";
 import wishlistRoutes from "./routes/wishlist.routes.js";
 import bannerRoutes from "./routes/banner.routes.js";
+import shippingRoutes from "./routes/shipping.routes.js";
 const app = express();
 
 connectDB();
+
 
 // Global Middlewares
 app.use(
@@ -43,6 +45,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/cart", cartRoutes);
+app.use("/api/shipping", shippingRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/admins", adminRoutes);
 app.use("/api/payments", paymentRoutes);

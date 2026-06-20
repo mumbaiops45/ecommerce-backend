@@ -13,7 +13,14 @@ import {
 // POST /api/products
 export const create = async (req, res) => {
   try {
-    const product = await createProduct(req.body);
+    const data = {...req.body}
+    if (req.files?.length) {
+      data.images=req.files.map((file)=>({
+         url: file.path,
+    alt: req.body.title || "",
+      }))
+    }
+    const product = await createProduct(data);
     return res.status(201).json({ success: true, product });
   } catch (err) {
     return res.status(400).json({ success: false, message: err.message });
@@ -45,7 +52,17 @@ export const getOne = async (req, res) => {
 // PUT /api/products/:id
 export const update = async (req, res) => {
   try {
-    const product = await updateProduct(req.params.id, req.body);
+    const data = {
+  ...req.body,
+};
+
+if (req.files?.length) {
+  data.images = req.files.map((file) => ({
+    url: file.path,
+    alt: req.body.title || "",
+  }));
+}
+    const product = await updateProduct(req.params.id, data);
     return res.status(200).json({ success: true, product });
   } catch (err) {
     return res.status(400).json({ success: false, message: err.message });

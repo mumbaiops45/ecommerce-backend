@@ -1,7 +1,13 @@
 import Banners from "../models/Banners.model.js";
-
-export const getAllHeroBanner = async () => {
+export const getAllHeroBanners = async () => {
   return await Banners.find({
+       type: "hero",
+    isActive: true,
+  }).sort({ serialNo: 1 });
+};
+export const getAllMiddleBanners = async () => {
+  return await Banners.find({
+    type: "middle",
     isActive: true,
   }).sort({ serialNo: 1 });
 };
