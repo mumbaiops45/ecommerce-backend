@@ -2,9 +2,18 @@ import mongoose from "mongoose";
 
 const slabSchema = new mongoose.Schema(
   {
-    minAmount: Number,
-    maxAmount: Number,
-    charge: Number,
+    minAmount: {
+      type: Number,
+      required: true,
+    },
+    maxAmount: {
+      type: Number,
+      required: true,
+    },
+    charge: {
+      type: Number,
+      required: true,
+    },
   },
   { _id: false }
 );
@@ -27,17 +36,16 @@ const shippingSchema = new mongoose.Schema(
   {
     mode: {
       type: String,
-      enum: ["flat", "slab", "state", "both"],
+      enum: ["flat", "state", "slab"],
       default: "flat",
     },
 
-    calculationType: {
-      type: String,
-      enum: ["add", "override"],
-      default: "add",
+    flatCharge: {
+      type: Number,
+      default: 0,
     },
 
-    flatCharge: {
+    freeShippingAbove: {
       type: Number,
       default: 0,
     },

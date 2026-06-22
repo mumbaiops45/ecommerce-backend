@@ -1,3 +1,4 @@
+// src/controllers/category.controller.js
 import {
   createCategory,
   getAllCategories,
@@ -9,7 +10,14 @@ import {
 // POST /api/categories
 export const create = async (req, res) => {
   try {
-    const category = await createCategory(req.body);
+    const { existingImage, ...rest } = req.body;
+    const data = { ...rest };
+
+    if (req.file) {
+      data.image = req.file.path;   // Cloudinary URL
+    }
+
+    const category = await createCategory(data);
     return res.status(201).json({ success: true, category });
   } catch (err) {
     return res.status(400).json({ success: false, message: err.message });
@@ -17,7 +25,6 @@ export const create = async (req, res) => {
 };
 
 // GET /api/categories
-// Query params: page, limit, sort, order (asc/desc)
 export const getAll = async (req, res) => {
   try {
     const result = await getAllCategories(req.query);
@@ -40,7 +47,18 @@ export const getOne = async (req, res) => {
 // PUT /api/categories/:id
 export const update = async (req, res) => {
   try {
-    const category = await updateCategory(req.params.id, req.body);
+    const { existingImage, ...rest } = req.body;
+    const data = { ...rest };
+
+    if (req.file) {
+      // naya file aaya
+      data.image = req.file.path;
+    } else if (existingImage !== undefined) {
+      // koi naya file nahi — jo user ne rakha (ya "" agar remove kiya)
+      data.image = existingImage;
+    }
+
+    const category = await updateCategory(req.params.id, data);
     return res.status(200).json({ success: true, category });
   } catch (err) {
     return res.status(400).json({ success: false, message: err.message });

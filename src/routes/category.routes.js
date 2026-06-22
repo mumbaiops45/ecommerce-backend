@@ -1,3 +1,4 @@
+// src/routes/category.routes.js
 import express from "express";
 import {
   create,
@@ -7,21 +8,31 @@ import {
   remove,
 } from "../controllers/category.controller.js";
 import { protect, authorize } from "../middlewares/auth.middleware.js";
-import { validate } from "../middlewares/validation.middleware.js";
-import {
-  createCategorySchema,
-  updateCategorySchema,
-} from "../validations/category.validation.js";
+import upload from "../middlewares/upload.middleware.js";
 
 const router = express.Router();
 
-// ─── Public routes ────────────────────────────────────────────────────────────
-router.get("/", getAll);     // GET  /api/categories?page=1&limit=10&sort=name&order=asc
-router.get("/:id", getOne);  // GET  /api/categories/:id
+// ─── Public routes ──────────────────────────────────────────
+router.get("/", getAll);
+router.get("/:id", getOne);
 
-// ─── Admin only ───────────────────────────────────────────────────────────────
-router.post("/", protect, authorize("admin", "superadmin"), validate(createCategorySchema), create);
-router.put("/:id", protect, authorize("admin", "superadmin"), validate(updateCategorySchema), update);
+// ─── Admin only ─────────────────────────────────────────────
+router.post(
+  "/",
+  protect,
+  authorize("admin", "superadmin"),
+  upload.single("image"),       // ← FormData parse + file → Cloudinary
+  create
+);
+
+router.put(
+  "/:id",
+  protect,
+  authorize("admin", "superadmin"),
+  upload.single("image"),
+  update
+);
+
 router.delete("/:id", protect, authorize("admin", "superadmin"), remove);
 
 export default router;
