@@ -45,4 +45,9 @@ export const createOrderSchema = z.object({
       .string({ required_error: "Pincode is required" })
       .regex(/^\d{6}$/, "Pincode must be 6 digits"),
   }),
+
+  couponCode: z
+    .string()
+    .trim()
+    .optional(),
 });

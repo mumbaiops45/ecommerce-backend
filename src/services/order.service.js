@@ -4,6 +4,7 @@ import Product from "../models/Product.model.js";
 import User from "../models/User.model.js";
 import Coupon from "../models/Coupon.model.js";
 import CouponUsage from "../models/CouponUsage.model.js";
+import Shipping from "../models/Shipping.model.js";
 
 const ALLOWED_SORT = ["createdAt", "totalAmount"];
 
@@ -51,10 +52,12 @@ export const getAllOrders = async ({
 };
 
 export const createOrder = async (userId, { items, shippingAddress, couponCode }) => {
+  
   const orderItems = [];
   let subtotal = 0;
   let discountAmount = 0;
   let coupon = null;
+  let shippingCharge = 0;
 
   for (const item of items) {
     if (!mongoose.Types.ObjectId.isValid(item.productId)) {
@@ -125,20 +128,61 @@ export const createOrder = async (userId, { items, shippingAddress, couponCode }
     }
   };
 
+
   discountAmount = Math.min(
     discountAmount,
     subtotal
   );
+  if (shippingAddress) {
+    const shippingDetail = await Shipping.findOne({
+      isActive: true
+    });
 
-  const totalAmount = subtotal - discountAmount;
+    if (!shippingDetail) {
+      throw new Error("Shipping configuration not found");
+    }
+
+    if (subtotal >= shippingDetail.freeShippingAbove) {
+      shippingCharge = 0;
+    } else {
+      if (shippingDetail.mode === "flat") {
+        shippingCharge = shippingDetail.flatCharge;
+      }
+      if (shippingDetail.mode === "state") {
+        const data = shippingDetail.states.find((s) => s.state.toLowerCase() === shippingAddress.state.toLowerCase());
+        if (!data) {
+          throw new Error(
+            `Shipping not available for ${shippingAddress.state}`
+          );
+        }
+
+        shippingCharge = data?.charge || 0;
+      }
+      if (shippingDetail.mode === "slab") {
+        const data = shippingDetail.slabs.find((s) =>
+          s.minAmount <= subtotal && s.maxAmount >= subtotal
+        );
+        if (!data) {
+          throw new Error(
+            "No shipping slab configured for this order amount"
+          );
+        }
+
+        shippingCharge = data?.charge || 0;
+      }
+    }
+
+  }
+  const totalAmount = subtotal - discountAmount + shippingCharge;
   const order = await Order.create({
     user: userId,
     items: orderItems,
     shippingAddress,
     subtotal,
     discountAmount,
+    shippingAmount:shippingCharge,
     couponCode: couponCode || "",
-  couponId: coupon?._id || null,
+    couponId: coupon?._id || null,
     totalAmount
   });
 
