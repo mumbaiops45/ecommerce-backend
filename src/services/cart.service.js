@@ -3,6 +3,7 @@ import Cart from "../models/Cart.model.js";
 import Product from "../models/Product.model.js";
 import User from "../models/User.model.js";
 
+
 const populateCart = (userId) =>
   Cart.findOne({ user: userId }).populate(
     "items.product",
@@ -60,7 +61,15 @@ export const updateCartItem = async (userId, productId, quantity) => {
     (item) => item.product.toString() === productId
   );
   if (!item) throw new Error("Item not in cart");
+  const product = await Product.findById(productId);
 
+  if (!product) {
+    throw new Error("product not found");
+  }
+if (product.stock<quantity) {
+  throw new Error(  `Only ${product.stock} items available`);
+  
+}
   item.quantity = quantity;
   await cart.save();
 

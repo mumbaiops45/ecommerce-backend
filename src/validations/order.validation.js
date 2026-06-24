@@ -50,4 +50,5 @@ export const createOrderSchema = z.object({
     .string()
     .trim()
     .optional(),
+  paymentMethod: z.enum(["online", "cod"]),
 });

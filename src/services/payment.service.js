@@ -4,6 +4,7 @@ import crypto from "crypto";
 import Cart from "../models/Cart.model.js";
 import Coupon from "../models/Coupon.model.js";
 import CouponUsage from "../models/CouponUsage.model.js";
+import Product from "../models/Product.model.js";
 
 export const createUserPaymentOrder = async (orderId) => {
 
@@ -78,7 +79,17 @@ if (order.paymentStatus === "paid") {
   expectedDate.setDate(expectedDate.getDate() + 4);
 
   order.expectedDeliveryDate = expectedDate;
-
+for (const item of order.items) {
+  await Product.findByIdAndUpdate(item.product,
+    {
+      $inc:
+      {
+        stock:-item.quantity,
+      }
+    }
+  )
+  
+}
   await order.save();
 
 const usage =

@@ -18,9 +18,9 @@ export const getAllOrder = async (req, res) => {
 export const placeOrder = async (req, res) => {
   try {
 
-    const { items, shippingAddress ,couponCode } = req.body;
+    const { items, shippingAddress ,couponCode,  paymentMethod } = req.body;
 
-    const order = await createOrder(req.user._id, { items, shippingAddress , couponCode });
+    const order = await createOrder(req.user._id, { items, shippingAddress , couponCode , paymentMethod});
     return res.status(201).json({ success: true, message: "Order placed", order });
   } catch (err) {
     return res.status(400).json({ success: false, message: err.message });

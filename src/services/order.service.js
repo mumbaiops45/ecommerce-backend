@@ -51,13 +51,17 @@ export const getAllOrders = async ({
   return { orders, total, page: pageNum, totalPages: Math.ceil(total / limitNum) };
 };
 
-export const createOrder = async (userId, { items, shippingAddress, couponCode }) => {
-  
+export const createOrder = async (userId, { items, shippingAddress, couponCode, paymentMethod }) => {
+
   const orderItems = [];
   let subtotal = 0;
   let discountAmount = 0;
   let coupon = null;
   let shippingCharge = 0;
+
+  if (!["online", "cod"].includes(paymentMethod)) {
+  throw new Error("Invalid payment method");
+}
 
   for (const item of items) {
     if (!mongoose.Types.ObjectId.isValid(item.productId)) {
@@ -180,13 +184,27 @@ export const createOrder = async (userId, { items, shippingAddress, couponCode }
     shippingAddress,
     subtotal,
     discountAmount,
-    shippingAmount:shippingCharge,
+    shippingAmount: shippingCharge,
     couponCode: couponCode || "",
     couponId: coupon?._id || null,
-    totalAmount
+    totalAmount,
+    paymentMethod,
+    paymentStatus: "pending",
+    orderStatus: "processing",
   });
-
-
+  
+if(paymentMethod==="cod"){
+for ( const item of order.items) {
+  await Product.findByIdAndUpdate(item.product,
+    {
+      $inc:{
+        stock:-item.quantity
+      }
+    }
+  )
+  
+}
+}
 
   return order;
 };
@@ -217,6 +235,35 @@ export const updateOrderById = async (userId,
     throw new Error("Invalid order ID");
   }
 
+  const existingOrder = await Order.findById(orderId);
+
+  if (!existingOrder) {
+    throw new Error("order not found");
+  }
+  // Cancelled
+  if (data.orderStatus === "cancelled" && existingOrder.orderStatus !== "cancelled") {
+    if (
+      ["shipped", "delivered"].includes(
+        existingOrder.orderStatus
+      )
+    ) {
+      throw new Error(
+        "Order cannot be cancelled"
+      );
+    }
+    for (const item of existingOrder.items) {
+      await Product.findByIdAndUpdate(item.product, {
+        $inc: {
+          stock: item.quantity,
+        }
+      })
+
+    }
+    data.expectedDeliveryDate = null;
+    data.deliveredAt = null;
+  }
+
+
   // Delivered
   if (data.orderStatus === "delivered") {
     data.deliveredAt = new Date();
@@ -230,11 +277,6 @@ export const updateOrderById = async (userId,
     data.deliveredAt = null;
   }
 
-  // Cancelled
-  if (data.orderStatus === "cancelled") {
-    data.expectedDeliveryDate = null;
-    data.deliveredAt = null;
-  }
 
   const order = await Order.findByIdAndUpdate(
     orderId,
@@ -245,9 +287,6 @@ export const updateOrderById = async (userId,
     }
   );
 
-  if (!order) {
-    throw new Error("Order not found");
-  }
 
   return order;
 };
