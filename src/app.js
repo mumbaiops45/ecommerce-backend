@@ -16,6 +16,7 @@ import couponRoutes from "./routes/coupon.routs.js";
 import wishlistRoutes from "./routes/wishlist.routes.js";
 import bannerRoutes from "./routes/banner.routes.js";
 import shippingRoutes from "./routes/shipping.routes.js";
+import analyticRoutes from "./routes/analytics.routes.js";
 const app = express();
 
 connectDB();
@@ -51,5 +52,5 @@ app.use("/api/admins", adminRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/coupons", couponRoutes);
-
+app.use("/api/analytics", analyticRoutes);
 export default app;
